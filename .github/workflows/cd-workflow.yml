@@ -52,22 +52,22 @@ jobs:
             echo "✋🏻Stopping existing container"
             sudo docker stop cubeet || true
             sudo docker rm cubeet || true
-
+      
             sudo docker ps -a
             
             echo "🔍 Checking image name inside EC2"
             echo "🧩 IMAGE = ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}"
-
+      
             echo "🥳 Pulling new image"
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
-
+      
             echo "🌱 Running new container"
             sudo docker run -d \
               -p 8000:8080 \
               --name cubeet \
-              -e SPRING_DATA_MONGODB_URI=${{ secrets.MONGODB_URL }} \
+              -e SPRING_DATA_MONGODB_URI='${{ secrets.MONGODB_URL }}' \
               ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
-
-
+      
             echo "🚮 Cleaning up old images"
             sudo docker image prune -f
+
