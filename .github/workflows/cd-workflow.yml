@@ -1,10 +1,3 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a package using Gradle and then publish it to GitHub packages when a release is created
-# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Publishing-using-gradle
-
 name: CD with Gradle and Docker
 
 on:
@@ -19,30 +12,30 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - uses: actions/checkout@v4
 
-     - name: 👏🏻 grant execute permission for gradlew
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
+      - name: 👏🏻 grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: 🐘 build with Gradle (without test)
         run: ./gradlew clean build -x test --stacktrace
 
       - name: 🐳 Docker build & push
-        run:  |
+        run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }} .
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
@@ -55,18 +48,18 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: ${{ secrets.EC2_PORT }}
           envs: GITHUB_SHA
-           script: |
+          script: |
             echo "✋🏻Stopping existing container"
-            sudo docker stop cubeet
-            sudo docker rm cubeet
-        
+            sudo docker stop cubeet || true
+            sudo docker rm cubeet || true
+
             sudo docker ps -a
-            
+
             echo "🥳 Pulling new image"
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
-            
+
             echo "🌱 Running new container"
-            sudo docker run -d -p 8000:{프로젝트 포트번호} --name {도커 컨테이너 이름} ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
+            sudo docker run -d -p 8000:8080 --name cubeet ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
 
             echo "🚮 Cleaning up old images"
             sudo docker image prune -f
