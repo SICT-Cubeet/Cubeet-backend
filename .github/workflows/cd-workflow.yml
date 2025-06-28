@@ -47,7 +47,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           port: ${{ secrets.EC2_PORT }}
-          envs: GITHUB_SHA
+          envs: GITHUB_SHA,MONGODB_URL
           script: |
             echo "✋🏻Stopping existing container"
             sudo docker stop cubeet || true
