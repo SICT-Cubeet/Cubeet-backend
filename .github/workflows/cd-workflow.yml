@@ -39,7 +39,7 @@ jobs:
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker build -f Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }} .
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
-
+          
       - name: 🚀 deploy to server
         uses: appleboy/ssh-action@master
         with:
@@ -54,6 +54,9 @@ jobs:
             sudo docker rm cubeet || true
 
             sudo docker ps -a
+            
+            echo "🔍 Checking image name inside EC2"
+            echo "🧩 IMAGE = ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}"
 
             echo "🥳 Pulling new image"
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
